@@ -28,3 +28,18 @@ Docker Compose был установлен, и был создан файл dock
 Создан файл .gitlab-ci.yml.
 Подключен внешний раннер.
 Добавлены файлы проекта "reddit", тесты в пайплайне и динамические окружения.
+
+# HW monitoring-1
+Создан Dockerfile для Prometheus и файл конфигурации prometheus.yml в папке monitoring/prometheus.
+Собран образ prometheus
+Затем были пересобраны образы каждого сервиса с помощью скриптов docker_build.sh.
+В основной docker/docker-compose.yml файл был добавлен сервис Prometheus.
+Тестирование таргетов и метрик для всех сервисов было выполнено успешно.
+Экспортер node-exporter был добавлен в основной docker-compose.yml, и prometheus.yml был отредактирован соответственно.
+Пересобран образ Prometheus.
+Затем сервисы были пересозданы, и эндпоинты с метриками были протестированы.
+Созданные образы были отправлены в Docker Hub:
+- https://hub.docker.com/r/romanovshad/comment
+- https://hub.docker.com/r/romanovshad/prometheus
+- https://hub.docker.com/r/romanovshad/post
+- https://hub.docker.com/r/romanovshad/ui
