@@ -1,0 +1,38 @@
+---
+# tasks file for k8s-node
+
+- name: Check if nodes has joined the cluster already
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  ignore_errors: true
+  register: kubeconf_info
+
+#TODO переделать под k8s модуль
+- name: Get the token for joining the worker nodes
+  ansible.builtin.shell:
+    cmd: kubeadm token create  --print-join-command
+  register: join_worker_command
+  delegate_to: "{{ groups['master'] | first }}"
+  when: not kubeconf_info.stat.exists
+
+- debug:
+    var: join_worker_command.stdout
+
+- name: Add to k8s cluster
+  ansible.builtin.shell:
+    cmd: "{{ join_worker_command.stdout }}"
+  when: not kubeconf_info.stat.exists
+
+- name: Add label to worker
+  k8s:
+    state: present
+    api_version: v1
+    kind: Node
+    name: "{{ inventory_hostname_short }}"
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        labels:
+          node-role.kubernetes.io/worker: worker
+  delegate_to: "{{ groups['master'] | first }}"

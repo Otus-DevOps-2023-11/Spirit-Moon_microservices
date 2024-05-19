@@ -1,0 +1,13 @@
+cloud_id                 = "b1g6a228d"
+folder_id                = "b1gobgjc"
+image_id                 = "fd878bh"
+public_key_path          = "~/.ssh/appuser.pub"
+private_key_path         = "~/.ssh/appuser"
+subnet_id                = "e9b2rlfq"
+service_account_key_file = "~/.terraform.d/key.json"
+#token                    = "y0_sw"
+
+k8s-node_disk_image      = "fd8idq8k33m9hlj0huli"
+k8s-master_disk_image    = "fd8idq8k33m9hlj0huli"
+
+credentials              = "credentials"

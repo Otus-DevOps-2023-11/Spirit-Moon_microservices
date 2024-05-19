@@ -1,6 +1,0 @@
-[master]
-master1 ansible_host=
-
-[node]
-node1 ansible_host=
-node2 ansible_host=

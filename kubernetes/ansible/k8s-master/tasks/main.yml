@@ -1,0 +1,57 @@
+---
+# tasks file for k8s-master
+- name: Set KUBECONFIG environment variable
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    line: 'KUBECONFIG=/etc/kubernetes/admin.conf'
+    state: present
+
+- name: Install soft
+  ansible.builtin.apt:
+    name: "{{ k8s_master_packages_list }}"
+    update_cache: true
+
+- name: Add sysop user to root group
+  ansible.builtin.user:
+    name: sysop
+    groups: root
+
+- name: Check if file exists
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_admin_conf
+
+- name: Kubeadm init
+  ansible.builtin.shell:
+    cmd: "kubeadm init --apiserver-cert-extra-sans={{ ansible_host }} --apiserver-advertise-address=0.0.0.0 --control-plane-endpoint={{ ansible_host }} --pod-network-cidr=10.244.0.0/16"
+  when: not kubernetes_admin_conf.stat.exists
+
+# - reboot:
+#   when: not kubernetes_admin_conf.stat.exists
+
+# - name: Wait for kube started (10 min)
+#   wait_for:
+#     timeout: 600
+#   when: not kubernetes_admin_conf.stat.exists
+
+- name: Set /etc/kubernetes/admin.conf read permission for group
+  ansible.builtin.file:
+    path: /etc/kubernetes/admin.conf
+    mode: 'g+r'
+
+- name: Download calico manifest to the cluster.
+  ansible.builtin.get_url:
+    url: https://docs.projectcalico.org/manifests/calico.yaml
+    dest: ~/calico.yaml
+    mode: "0664"
+
+- name: Change CALICO_IPV4POOL_CIDR
+  replace:
+    path: ~/calico.yaml
+    regexp: '^(\s*)# - name: CALICO_IPV4POOL_CIDR\s*\n\1#\s+value: "192\.168\.0\.0/16"\s*$'
+    replace: '            - name: CALICO_IPV4POOL_CIDR\n              value: "10.244.0.0/16"'
+
+- name: Apply calico manifest to the cluster.
+  kubernetes.core.k8s:
+    state: present
+    src: ~/calico.yaml
