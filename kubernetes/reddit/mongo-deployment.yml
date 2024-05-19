@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo
+  name: mongo-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: reddit
+      app: mongo
   template:
     metadata:
       name: mongo
       labels:
-        app: reddit
+        app: mongo
     spec:
       containers:
       - image: mongo:3.2
