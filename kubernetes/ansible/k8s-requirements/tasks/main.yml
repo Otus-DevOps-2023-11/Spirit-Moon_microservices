@@ -1,0 +1,63 @@
+---
+# tasks file for k8s-requirements
+- name: Change hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname_short }}"
+  # when: inventory_hostname_short != 'node1'
+
+- name: Install soft
+  ansible.builtin.apt:
+    name: "{{ packages_list }}"
+    update_cache: true
+
+- name: Install Kubernetes for Python
+  pip:
+    name: kubernetes
+    state: present
+
+- name: Add GPG keys
+  ansible.builtin.apt_key:
+    url: '{{ item.url }}'
+    state: present
+    keyring: '{{ item.keyring }}'
+  with_items:
+    - {url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version.split('.')[0] }}.{{ k8s_version.split('.')[1] }}/deb/Release.key", keyring: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"}
+    - {url: "https://download.docker.com/linux/ubuntu/gpg", keyring: "/etc/apt/keyrings/docker.gpg"}
+
+- name: Add repo Kubernetes and docker
+  ansible.builtin.apt_repository:
+    repo: '{{ item }}'
+    state: present
+  with_items:
+    - deb [signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu   jammy stable
+    - deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_version.split('.')[0] }}.{{ k8s_version.split('.')[1] }}/deb/ /
+
+- name: Install k8s soft
+  ansible.builtin.apt:
+    name: "{{ k8s_packages_list }}"
+    update_cache: true
+
+#TODO сделать проверку, что конфиг уже дефолтный
+- name: Set default containerd config
+  ansible.builtin.shell:
+    cmd: containerd config default > /etc/containerd/config.toml
+
+- name: Configure config.toml file for systemd cgroup driver
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    search_string: "SystemdCgroup = false"
+    line: "SystemdCgroup = true"
+    state: present
+
+#TODO сделать проверку, что конфиг не менялся
+- name: Restart containerd
+  ansible.builtin.service:
+    name: containerd
+    state: restarted
+    enabled: true
+
+- name: Set ip forward
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: true

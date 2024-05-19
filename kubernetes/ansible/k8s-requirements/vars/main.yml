@@ -1,0 +1,13 @@
+---
+# vars file for k8s-requirements
+packages_list:
+  - ca-certificates
+  - curl
+  - python3-pip
+
+k8s_packages_list:
+  - containerd.io=1.6.31-1
+  - kubeadm={{ k8s_version }}
+  - kubelet={{ k8s_version }}
+
+k8s_node_packages_list:

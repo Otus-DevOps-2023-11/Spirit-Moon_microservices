@@ -1,0 +1,4 @@
+---
+# vars file for k8s-master
+k8s_master_packages_list:
+  - kubectl={{ k8s_version }}

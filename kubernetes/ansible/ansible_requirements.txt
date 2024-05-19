@@ -1,0 +1,3 @@
+Requires Ansible>=2.14.0
+Установить ансбл коллекции:
+ansible-galaxy collection install kubernetes.core ansible.posix

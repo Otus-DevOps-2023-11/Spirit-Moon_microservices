@@ -1,0 +1,7 @@
+[master]
+master1 ansible_host=158.160.97.146
+
+
+[node]
+master1 ansible_host=158.160.97.146
+node2 ansible_host=130.193.39.139
